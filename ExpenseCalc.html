@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expense Tracker System</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .sub {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    .summary-bar {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      max-width: 600px;
+      margin: auto;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .summary-card {
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 15px;
+      flex: 1;
+      min-width: 220px;
+      text-align: center;
+    }
+
+    .summary-card .label {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .summary-card .amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-box {
+      max-width: 600px;
+      margin: auto;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-box h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    input,
+    select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #msg {
+      color: red;
+      font-size: 13px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #expenseList {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .category {
+      background-color: #eee;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .delete-btn {
+      background-color: #dc3545;
+      padding: 5px 10px;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .delete-btn:hover {
+      background-color: #b02a37;
+    }
+
+    #emptyMsg {
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 20px;
+      text-align: center;
+      color: #777;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #666;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Expense Tracker System</h1>
+  <p class="sub">Manage daily expenses and monitor budget efficiently.</p>
+
+  <div class="summary-bar">
+
+    <div class="summary-card">
+      <div class="label">Total Expenses</div>
+      <div class="amount" id="totalDisplay">₹0.00</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="label">Remaining Budget</div>
+      <div class="amount" id="budgetLeft">₹5000.00</div>
+    </div>
+
+  </div>
+
+  <div class="form-box">
+
+    <h3>Add New Expense</h3>
+
+    <div class="form-row">
+      <input type="text" id="expName" placeholder="Enter description">
+      <input type="number" id="expAmount" placeholder="Enter amount">
+    </div>
+
+    <div class="form-row">
+      <select id="expCategory">
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Health">Health</option>
+        <option value="Education">Education</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div id="msg"></div>
+
+    <button onclick="addExpense()">Add Expense</button>
+
+  </div>
+
+  <div id="expenseList"></div>
+
+  <footer>
+    <p>Developed by Tamajit Modak | BCA Semester 1 Project</p>
+  </footer>
+
+  <script>
+
+    var BUDGET = 5000;
+    var expenses = [];
+
+    var savedExpenses = localStorage.getItem("expenses");
+
+    if (savedExpenses) {
+      expenses = JSON.parse(savedExpenses);
+    }
+
+    function saveExpenses() {
+      localStorage.setItem("expenses", JSON.stringify(expenses));
+    }
+
+    function addExpense() {
+
+      var name = document.getElementById("expName").value.trim();
+      var amount = parseFloat(document.getElementById("expAmount").value);
+      var category = document.getElementById("expCategory").value;
+      var msg = document.getElementById("msg");
+
+      if (name === "") {
+        msg.textContent = "Please enter expense description.";
+        return;
+      }
+
+      if (isNaN(amount) || amount <= 0) {
+        msg.textContent = "Please enter valid amount.";
+        return;
+      }
+
+      msg.textContent = "";
+
+      var today = new Date();
+
+      var date =
+        today.getDate() + "/" +
+        (today.getMonth() + 1) + "/" +
+        today.getFullYear();
+
+      var expense = {
+        id: Date.now(),
+        name: name,
+        amount: amount,
+        category: category,
+        date: date
+      };
+
+      expenses.push(expense);
+
+      saveExpenses();
+
+      document.getElementById("expName").value = "";
+      document.getElementById("expAmount").value = "";
+
+      renderExpenses();
+    }
+
+    function deleteExpense(id) {
+
+      for (var i = 0; i < expenses.length; i++) {
+
+        if (expenses[i].id === id) {
+          expenses.splice(i, 1);
+          break;
+        }
+
+      }
+
+      saveExpenses();
+
+      renderExpenses();
+    }
+
+    function renderExpenses() {
+
+      var total = 0;
+
+      for (var i = 0; i < expenses.length; i++) {
+        total += expenses[i].amount;
+      }
+
+      document.getElementById("totalDisplay").textContent =
+        "₹" + total.toFixed(2);
+
+      var remaining = BUDGET - total;
+
+      var budgetElement = document.getElementById("budgetLeft");
+
+      budgetElement.textContent =
+        "₹" + remaining.toFixed(2);
+
+      if (remaining < 0) {
+        budgetElement.style.color = "red";
+      } else {
+        budgetElement.style.color = "green";
+      }
+
+      var container = document.getElementById("expenseList");
+
+      container.innerHTML = "";
+
+      if (expenses.length === 0) {
+
+        container.innerHTML =
+          "<div id='emptyMsg'>No expenses added.</div>";
+
+        return;
+      }
+
+      var table = document.createElement("table");
+
+      table.innerHTML =
+        "<tr>" +
+        "<th>No.</th>" +
+        "<th>Description</th>" +
+        "<th>Category</th>" +
+        "<th>Amount</th>" +
+        "<th>Date</th>" +
+        "<th>Action</th>" +
+        "</tr>";
+
+      for (var j = expenses.length - 1; j >= 0; j--) {
+
+        var e = expenses[j];
+
+        var row = document.createElement("tr");
+
+        row.innerHTML =
+          "<td>" + (expenses.length - j) + "</td>" +
+          "<td>" + e.name + "</td>" +
+          "<td><span class='category'>" + e.category + "</span></td>" +
+          "<td>₹" + e.amount.toFixed(2) + "</td>" +
+          "<td>" + e.date + "</td>" +
+          "<td><button class='delete-btn' onclick='deleteExpense(" + e.id + ")'>Delete</button></td>";
+
+        table.appendChild(row);
+      }
+
+      container.appendChild(table);
+    }
+
+    renderExpenses();
+
+  </script>
+
+</body>
+</html>
